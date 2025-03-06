@@ -139,16 +139,16 @@ class Game:
         self._layout_specials(7, "white")
 
     def _layout_specials(self, row, color):
-        # piece_list = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
-        for i in range(8):
-            new_rook = Rook(
+        piece_list = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
+        for i, piece in enumerate(piece_list):
+            new_piece = piece(
                 *self.position.position_matrix[row][i],
                 color,
                 self.position.piece_width,
                 self.position.piece_height,
             )
-            self.graph.node_matrix[row][i].piece = new_rook
-            getattr(self, f"{color}s").add(new_rook)
+            self.graph.node_matrix[row][i].piece = new_piece
+            getattr(self, f"{color}s").add(new_piece)
 
     def _layout_pawns(self):
         for i in range(8):
@@ -443,6 +443,55 @@ class Queen(Piece):
         self._check_path(node, self.move_color_codex[self.color]["bl"], valid_move_nodes)
         self._check_path(node, self.move_color_codex[self.color]["br"], valid_move_nodes)
         return [n for n in valid_move_nodes if n]
+    
+class Bishop(Piece):
+    def __init__(self, x, y, color, width, height):
+        super().__init__(color, width, height)
+        image = pygame.image.load(
+            f"./assets/imgs/pieces/chess_piece_2_{self.color}_bishop.png"
+        )
+        image = pygame.transform.scale(image, (width, height))
+        self.image.blit(image, (0, 0))
+        self.original_image = self.image.copy()
+        self.update((x, y))
+
+    def valid_moves(self, node):
+        valid_move_nodes = []
+        self._check_path(node, self.move_color_codex[self.color]["fl"], valid_move_nodes)
+        self._check_path(node, self.move_color_codex[self.color]["fr"], valid_move_nodes)
+        self._check_path(node, self.move_color_codex[self.color]["bl"], valid_move_nodes)
+        self._check_path(node, self.move_color_codex[self.color]["br"], valid_move_nodes)
+        return [n for n in valid_move_nodes if n]
+    
+class Knight(Piece):
+    def __init__(self, x, y, color, width, height):
+        super().__init__(color, width, height)
+        image = pygame.image.load(
+            f"./assets/imgs/pieces/chess_piece_2_{self.color}_knight.png"
+        )
+        image = pygame.transform.scale(image, (width, height))
+        self.image.blit(image, (0, 0))
+        self.original_image = self.image.copy()
+        self.update((x, y))
+
+    def valid_moves(self, node):
+        valid_move_nodes = self._check_l(node, "f") + self._check_l(node, "b") + self._check_l(node, "l") + self._check_l(node, "r")
+        print(valid_move_nodes)
+        return [n for n in valid_move_nodes if n]
+    
+    def _check_l(self, node, direction):
+        if direction == "f" or direction == "b":
+            finals = ("l", "r")
+        elif direction == "l" or direction == "r":
+            finals = ("f", "b")
+        curr_node = node
+        for i in range(2):
+            curr_node = getattr(curr_node, self.move_color_codex[self.color][direction]) if getattr(curr_node, self.move_color_codex[self.color][direction]) else None
+            if not curr_node:
+                return [curr_node]
+        return [getattr(curr_node, self.move_color_codex[self.color][finals[0]]), getattr(curr_node, self.move_color_codex[self.color][finals[1]])]
+    
+
 
 
     
